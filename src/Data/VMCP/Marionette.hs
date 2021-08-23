@@ -10,7 +10,7 @@ Portability :  portable
 Data types for
 https://protocol.vmc.info/marionette-spec
 -}
-
+{-# LANGUAGE TemplateHaskell #-}
 module Data.VMCP.Marionette where
 import Data.Text (Text)
 import Linear.Quaternion (Quaternion)

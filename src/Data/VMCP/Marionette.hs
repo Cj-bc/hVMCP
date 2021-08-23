@@ -22,7 +22,8 @@ import Control.Lens ((^?), preview)
 import Control.Lens.TH (makeLenses)
 import Sound.OSC (Bundle(..), Message(..), ascii_to_string, Datum)
 import Sound.OSC.Lens
-import Control.Monad.State (StateT(..), evalStateT, state, lift)
+import Control.Monad.State (StateT(..), evalStateT, state, lift, get)
+import Control.Monad (when)
 
 -- | Addresses for Marionette protocol
 --
@@ -69,8 +70,11 @@ data Address =
 
 makeLenses ''Address
 -- | Helper function for state monad
-pop :: StateT [a] Maybe a
-pop = state $ \(x:xs) -> (x, xs)
+pop :: MonadFail m => StateT [a] m a
+pop = do
+  s <- get
+  when (null s) . lift $ fail "No more state to pop"
+  state $ \s -> (head s, tail s)
   
 pop' l = do
   x <- pop

@@ -13,9 +13,16 @@ https://protocol.vmc.info/marionette-spec
 {-# LANGUAGE TemplateHaskell #-}
 module Data.VMCP.Marionette where
 import Data.Text (Text)
-import Linear.Quaternion (Quaternion)
-import Linear.V3 (V3)
+import Data.String (fromString)
+import Data.VRM
+import Data.UnityEditor
+import Linear.Quaternion (Quaternion(..))
+import Linear.V3 (V3(..))
+import Control.Lens ((^?), preview)
 import Control.Lens.TH (makeLenses)
+import Sound.OSC (Bundle(..), Message(..), ascii_to_string, Datum)
+import Sound.OSC.Lens
+import Control.Monad.State (StateT(..), evalStateT, state, lift)
 
 -- | Addresses for Marionette protocol
 --
@@ -61,3 +68,27 @@ data Address =
   | VRMBlendShapeProxyApply
 
 makeLenses ''Address
+-- | Helper function for state monad
+pop :: StateT [a] Maybe a
+pop = state $ \(x:xs) -> (x, xs)
+  
+pop' l = do
+  x <- pop
+  lift (preview l x)
+
+
+fromOSCMessage :: Message -> Maybe Address
+fromOSCMessage (Message addr datums)
+  | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32
+  | addr == "/VMC/Ext/T"             = Time <$> head datums^?_Float
+  | addr == "/VMC/Ext/Bone/Pos"      = flip evalStateT datums $ do -- Monad of 'StateT [Datum] Maybe
+      name <- read . ascii_to_string <$> pop' _ASCII_String
+      pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
+      q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
+      q <- Quaternion <$> pop' _Float <*> pure q'
+      return $ BoneTransform name pos q
+  | addr == "/VMC/Ext/Blend/Val"     = VRMBlendShapeProxyValue . fromString.ascii_to_string
+                                       <$> (head datums^?_ASCII_String) <*> (head . tail) datums^?_Float
+  | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
+  | otherwise                                = Nothing
+fromOSCMessage _ = Nothing

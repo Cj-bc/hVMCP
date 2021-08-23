@@ -67,6 +67,7 @@ data Address =
                             }
   -- | 一連の内容が送信された後送信される
   | VRMBlendShapeProxyApply
+  deriving (Show, Eq)
 
 makeLenses ''Address
 -- | Helper function for state monad

@@ -25,6 +25,9 @@ source-repository head
 
 library
   exposed-modules:
+      Data.VMCP.Marionette
+    , Data.VRM
+    , Data.UnityEditor
   other-modules:
       Paths_hVMCP
   hs-source-dirs:

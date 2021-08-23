@@ -9,9 +9,9 @@ Portability :  portable
 
 Subset of data types for VRM
 -}
-
 module Data.VRM where
-import Data.Text (Text)
+import Data.Text (Text, pack)
+import Data.String (IsString(..))
 
 -- | Predefined Blendshape names.
 --
@@ -24,3 +24,28 @@ data BlendShapeExpression = Neutral
                           | LookLeft | LookRight
                           | BlinkL | BlinkR
                           | Custom Text
+                          deriving (Show, Read, Eq)
+
+-- 'IsString' にするのが正しいのかは少し悩んでいる...
+--
+-- I'm not sure whether it is correct decision to implement
+-- 'IsString' instance for 'BlendShapeExpression'
+instance IsString BlendShapeExpression where
+  fromString "Neutral"   = Neutral
+  fromString "A"         = A
+  fromString "I"         = I
+  fromString "U"         = U
+  fromString "E"         = E
+  fromString "O"         = O
+  fromString "Blink"     = Blink
+  fromString "Joy"       = Joy
+  fromString "Angry"     = Angry
+  fromString "Sorrow"    = Sorrow
+  fromString "Fun"       = Fun
+  fromString "LookUp"    = LookUp
+  fromString "LookDown"  = LookDown
+  fromString "LookLeft"  = LookLeft
+  fromString "LookRight" = LookRight
+  fromString "BlinkL"    = BlinkL
+  fromString "BlinkR"    = BlinkR
+  fromString other       = Custom $ pack other

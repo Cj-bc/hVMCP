@@ -87,8 +87,10 @@ fromOSCMessage (Message addr datums)
       q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q <- Quaternion <$> pop' _Float <*> pure q'
       return $ BoneTransform name pos q
-  | addr == "/VMC/Ext/Blend/Val"     = VRMBlendShapeProxyValue . fromString.ascii_to_string
-                                       <$> (head datums^?_ASCII_String) <*> (head . tail) datums^?_Float
+  | addr == "/VMC/Ext/Blend/Val"     = flip evalStateT datums $ do
+      name <- fromString.ascii_to_string <$> pop' _ASCII_String
+      val <- pop' _Float
+      return $ VRMBlendShapeProxyValue name val
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
 fromOSCMessage _ = Nothing

@@ -28,6 +28,7 @@ library
       Data.VMCP.Marionette
     , Data.VRM
     , Data.UnityEditor
+    , Sound.OSC.Lens
   other-modules:
       Paths_hVMCP
   hs-source-dirs:

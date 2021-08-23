@@ -10,7 +10,7 @@ Portability :  portable
 Subset of data types for VRM
 -}
 
-module Data.VMCP.Marionette where
+module Data.VRM where
 import Data.Text (Text)
 
 -- | Predefined Blendshape names.

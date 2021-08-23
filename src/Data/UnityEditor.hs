@@ -48,4 +48,4 @@ data HumanBodyBones = Hips
                     | RightLittleIntermediate
                     | RightLittleDistal
                     | LastBone
-                    deriving (Read)
+                    deriving (Read, Show, Eq)

@@ -96,7 +96,7 @@ spec = do
       prop "Ext/Blend/Val" $ \name val -> 
                                fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Val" [toDatumStr' name, OSC.Float val])
                                `shouldBe` Just (VRMBlendShapeProxyValue name val)
-      prop "Ext/Blend/Apply" $
+      it "Ext/Blend/Apply" $
         fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Apply" []) `shouldBe` Just VRMBlendShapeProxyApply
       
   describe "pop" $ do

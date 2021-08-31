@@ -9,8 +9,8 @@ import Control.Monad.State (execStateT)
 spec = do
   describe "fromOSCMessage" $ do
     context "when provided with unknown Message" $ do
-        it "returns Nothing" $
-          fromOSCMessage (OSC.Message "invalidAddress" []) == Nothing
+        it "returns Nothing" .
+          isNothing $ fromOSCMessage (OSC.Message "invalidAddress" [])
 
   describe "pop" $ do
     context "when State is empty list" $ do

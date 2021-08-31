@@ -13,6 +13,7 @@ https://protocol.vmc.info/marionette-spec
 {-# LANGUAGE TemplateHaskell #-}
 module Data.VMCP.Marionette where
 import Data.Text (Text)
+import Data.Text.Encoding (decodeUtf8')
 import Data.String (fromString)
 import Data.VRM
 import Data.UnityEditor
@@ -93,9 +94,12 @@ fromOSCMessage (Message addr datums)
       q <- Quaternion <$> pop' _Float <*> pure q'
       return $ BoneTransform name pos q
   | addr == "/VMC/Ext/Blend/Val"     = flip evalStateT datums $ do
-      name <- fromString.ascii_to_string <$> pop' _ASCII_String
-      val <- pop' _Float
-      return $ VRMBlendShapeProxyValue name val
+      name <- decodeUtf8' <$> pop' _ASCII_String
+      case name of
+        (Left e) -> fail "Ext/Blend/Val: invalid UTF-8 character"
+        (Right n') -> do
+          val <- pop' _Float
+          return $ VRMBlendShapeProxyValue (fromText n') val
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
 fromOSCMessage _ = Nothing

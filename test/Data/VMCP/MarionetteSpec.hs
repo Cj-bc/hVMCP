@@ -14,5 +14,5 @@ spec = do
 
   describe "pop" $ do
     context "when State is empty list" $ do
-      it "returns empty list" $
-        execStateT pop ([] :: [Int]) `shouldBe` []
+      it "fails" $
+        runStateT pop ([] :: [Int]) `shouldBe` Nothing

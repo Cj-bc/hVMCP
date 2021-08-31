@@ -14,7 +14,7 @@ import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import qualified Sound.OSC as OSC
 import Control.Monad (guard, unless)
-import Control.Monad.State (execStateT, runStateT)
+import Control.Monad.State (execStateT, runStateT, evalStateT)
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
 
@@ -103,3 +103,9 @@ spec = do
     context "when State is empty list" $ do
       it "fails" $
         runStateT pop ([] :: [Int]) `shouldBe` Nothing
+    prop "it shuld pop first one" $
+        \x y -> evalStateT pop ([x, y] :: [Int]) `shouldReturn` x
+    it "After running 'pop', state should have -1 length" .
+      forAll ( listOf1 (arbitrary :: Gen Int)) $ \s -> (length <$> execStateT pop s) `shouldReturn` (length s - 1)
+
+

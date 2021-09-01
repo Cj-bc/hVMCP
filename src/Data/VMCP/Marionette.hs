@@ -26,12 +26,12 @@ import Sound.OSC.Lens
 import Control.Monad.State (StateT(..), evalStateT, state, lift, get)
 import Control.Monad (when)
 
--- | Addresses for Marionette protocol
+-- | VMCPMessagees for Marionette protocol
 --
 -- For now it follows 'basic specification' and doesn't have 2.x
 --
 -- refer to: https://protocol.vmc.info/marionette-spec
-data Address =
+data MarionetteMsg =
   -- | 利用可否
   Available { _loaded :: Bool
             -- ^ True if model is already loaded
@@ -70,8 +70,8 @@ data Address =
   | VRMBlendShapeProxyApply
   deriving (Show, Eq)
 
-makeLenses ''Address
 -- | Helper function for state monad
+makeLenses ''MarionetteMsg
 pop :: MonadFail m => StateT [a] m a
 pop = do
   s <- get
@@ -83,7 +83,7 @@ pop' l = do
   lift (preview l x)
 
 
-fromOSCMessage :: Message -> Maybe Address
+fromOSCMessage :: Message -> Maybe MarionetteMsg
 fromOSCMessage (Message addr datums)
   | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32
   | addr == "/VMC/Ext/T"             = Time <$> head datums^?_Float

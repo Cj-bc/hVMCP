@@ -74,17 +74,25 @@ makeLenses ''MarionetteMsg
 makePrisms ''MarionetteMsg
 
 
+-- | 'pop' one item from 'State' state
+-- 
+-- Helper function for state monad
 pop :: MonadFail m => StateT [a] m a
 pop = do
   s <- get
   when (null s) . lift $ fail "No more state to pop"
   state $ \s -> (head s, tail s)
   
+-- | 'pop' one item from 'State' state, and extract with 'Getting'
 pop' l = do
   x <- pop
   lift (preview l x)
 
 
+-- | Convert OSC's 'Message' into 'MarionetteMsg'
+--
+-- All invalid 'Message's will be ignored, as it's written
+-- in VMCP specification.
 fromOSCMessage :: Message -> Maybe MarionetteMsg
 fromOSCMessage (Message addr datums)
   | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32

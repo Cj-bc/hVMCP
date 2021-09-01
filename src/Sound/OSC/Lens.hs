@@ -1,6 +1,6 @@
 {- |
 Module      :  Sound.OSC.Lens
-Description :  Some hand-made lens for Sound.OSC module
+Description :  Auto generated lenses for Sound.OSC module
 Copyright   :  (c) Cj.bc-sd a.k.a Cj-bc
 License     :  GPL-3
 Maintainer  :  cj.bc-sd@outlook.jp

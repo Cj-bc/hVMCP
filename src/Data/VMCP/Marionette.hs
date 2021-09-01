@@ -113,3 +113,11 @@ fromOSCMessage (Message addr datums)
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
 fromOSCMessage _ = Nothing
+
+
+-- | Convert 'Bundle' into list of 'MarionetteMsg'
+--
+-- TODO: Currently it ommit 'OSC-timetag'.
+-- I better to use them someway.
+fromOSCBundle :: Bundle -> Maybe [MarionetteMsg]
+fromOSCBundle (Bundle t msgs) = mapM fromOSCMessage msgs

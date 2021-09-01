@@ -1,1 +1,28 @@
-* hVMCP
+* hVMCP -- haskell implementation of VMCP protocol
+  
+  #+begin_quote
+  Currently, I don't have much motivation to write in English...
+  I think I will write this down in English in the future, but for now
+  please use translator or ask me directly to know details.
+  #+end_quote
+
+  ばもきゃプロトコルのHaskell版実装です。
+
+** 基本的な使い方
+   基本的には [[https://hackage.haskell.org/package/pipes-4.3.16][pipes]]と組み合わせて使うことになると思います。
+   例が file:examples にあるので参照して下さい。
+
+   より具体的な使い方の説明はチョットマッテネ
+  
+** FAQ
+   
+*** なんでGPL3なの？
+    依存パッケージである [[https://hackage.haskell.org/package/hosc-0.19.1][hosc]]がGPL3だからです。
+    
+*** なんで ~conduit~ ではなく ~pipes~ なの？
+    私が、一緒に使いたいライブラリの一つ[[https://hackage.haskell.org/package/gi-gtk-declarative-app-simple][gi-gtk-declarative-app-simple]]が
+    対応しているのが ~pipes~ だからです。
+
+    いずれは ~pipes~ と ~conduit~ それぞれ別パッケージとして提供したい
+    気持ちはありますが、ニーズ次第な部分が大きいです。
+

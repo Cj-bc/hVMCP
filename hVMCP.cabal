@@ -29,6 +29,7 @@ library
     , Data.VRM
     , Data.UnityEditor
     , Sound.OSC.Lens
+    , Pipes.VMCP.Marionette
   other-modules:
       Paths_hVMCP
   hs-source-dirs:
@@ -40,6 +41,7 @@ library
     , lens
     , hosc
     , mtl
+    , pipes
   default-language: Haskell2010
 
 executable hVMCP-exe

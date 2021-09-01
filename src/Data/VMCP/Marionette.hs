@@ -20,7 +20,7 @@ import Data.UnityEditor
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
 import Control.Lens ((^?), preview)
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeLenses, makePrisms)
 import Sound.OSC (Bundle(..), Message(..), ascii_to_string, Datum)
 import Sound.OSC.Lens
 import Control.Monad.State (StateT(..), evalStateT, state, lift, get)
@@ -70,8 +70,10 @@ data MarionetteMsg =
   | VRMBlendShapeProxyApply
   deriving (Show, Eq)
 
--- | Helper function for state monad
 makeLenses ''MarionetteMsg
+makePrisms ''MarionetteMsg
+
+
 pop :: MonadFail m => StateT [a] m a
 pop = do
   s <- get

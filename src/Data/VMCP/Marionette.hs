@@ -12,8 +12,8 @@ https://protocol.vmc.info/marionette-spec
 -}
 {-# LANGUAGE TemplateHaskell #-}
 module Data.VMCP.Marionette where
-import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8')
+import qualified Data.Text as T
 import Data.String (fromString)
 import Data.VRM
 import Data.UnityEditor
@@ -109,7 +109,7 @@ fromOSCMessage (Message addr datums)
         (Left e) -> fail "Ext/Blend/Val: invalid UTF-8 character"
         (Right n') -> do
           val <- pop' _Float
-          return $ VRMBlendShapeProxyValue (fromText n') val
+          return $ VRMBlendShapeProxyValue (fromString . T.unpack $ n') val
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
 fromOSCMessage _ = Nothing

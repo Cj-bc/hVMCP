@@ -46,6 +46,6 @@ instance IsString BlendShapeExpression where
   fromString "LookDown"  = LookDown
   fromString "LookLeft"  = LookLeft
   fromString "LookRight" = LookRight
-  fromString "BlinkL"    = BlinkL
-  fromString "BlinkR"    = BlinkR
+  fromString "Blink_L"    = BlinkL
+  fromString "Blink_R"    = BlinkR
   fromString other       = Custom $ pack other

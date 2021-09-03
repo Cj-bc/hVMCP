@@ -12,6 +12,7 @@ Subset of data types for VRM
 module Data.VRM where
 import Data.Text (Text, pack)
 import Data.String (IsString(..))
+import Data.Hashable (Hashable(..))
 
 -- | Predefined Blendshape names.
 --
@@ -49,3 +50,24 @@ instance IsString BlendShapeExpression where
   fromString "Blink_L"    = BlinkL
   fromString "Blink_R"    = BlinkR
   fromString other       = Custom $ pack other
+
+
+instance Hashable BlendShapeExpression where
+  hashWithSalt s Neutral        = s `hashWithSalt` (0 :: Int) 
+  hashWithSalt s A              = s `hashWithSalt` (1 :: Int)
+  hashWithSalt s I              = s `hashWithSalt` (2 :: Int)
+  hashWithSalt s U              = s `hashWithSalt` (3 :: Int)
+  hashWithSalt s E              = s `hashWithSalt` (4 :: Int)
+  hashWithSalt s O              = s `hashWithSalt` (5 :: Int)
+  hashWithSalt s Blink          = s `hashWithSalt` (6 :: Int)
+  hashWithSalt s Joy            = s `hashWithSalt` (7 :: Int)
+  hashWithSalt s Angry          = s `hashWithSalt` (8 :: Int)
+  hashWithSalt s Sorrow         = s `hashWithSalt` (9 :: Int)
+  hashWithSalt s Fun            = s `hashWithSalt` (10 :: Int)
+  hashWithSalt s LookUp         = s `hashWithSalt` (11 :: Int)
+  hashWithSalt s LookDown       = s `hashWithSalt` (12 :: Int)
+  hashWithSalt s LookLeft       = s `hashWithSalt` (13 :: Int)
+  hashWithSalt s LookRight      = s `hashWithSalt` (14 :: Int)
+  hashWithSalt s BlinkL         = s `hashWithSalt` (15 :: Int)
+  hashWithSalt s BlinkR         = s `hashWithSalt` (16 :: Int)
+  hashWithSalt s (Custom other) = s `hashWithSalt` (17 :: Int) `hashWithSalt` other

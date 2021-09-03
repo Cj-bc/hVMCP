@@ -42,6 +42,7 @@ library
     , hosc
     , mtl
     , pipes
+    , hashable
   default-language: Haskell2010
 
 executable recieve10

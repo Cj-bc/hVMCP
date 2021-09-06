@@ -97,6 +97,13 @@ fromOSCMessage :: Message -> Maybe MarionetteMsg
 fromOSCMessage (Message addr datums)
   | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32
   | addr == "/VMC/Ext/T"             = Time <$> head datums^?_Float
+  | addr == "/VMC/Ext/Root/Pos"      = flip evalStateT datums $ do
+      name <- ascii_to_string <$> pop' _ASCII_String
+      -- when (name /= "root") $ fail "Wrong root bone name"
+      pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
+      q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
+      q <- Quaternion <$> pop' _Float <*> pure q'
+      return $ RootTransform pos q
   | addr == "/VMC/Ext/Bone/Pos"      = flip evalStateT datums $ do -- Monad of 'StateT [Datum] Maybe
       name <- read . ascii_to_string <$> pop' _ASCII_String
       pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float

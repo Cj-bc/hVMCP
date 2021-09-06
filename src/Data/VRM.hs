@@ -10,7 +10,7 @@ Portability :  portable
 Subset of data types for VRM
 -}
 module Data.VRM where
-import Data.Text (Text, pack)
+import Data.Text (Text, pack, unpack)
 import Data.String (IsString(..))
 import Data.Hashable (Hashable(..))
 
@@ -25,8 +25,27 @@ data BlendShapeExpression = Neutral
                           | LookLeft | LookRight
                           | BlinkL | BlinkR
                           | Custom Text
-                          deriving (Show, Read, Eq)
+                          deriving (Read, Eq)
 
+instance Show BlendShapeExpression where
+  show Neutral     = "Neutral"     
+  show A           = "A"
+  show I           = "I"
+  show U           = "U"
+  show E           = "E"
+  show O           = "O"
+  show Blink       = "Blink"
+  show Joy         = "Joy"
+  show Angry       = "Angry"
+  show Sorrow      = "Sorrow"
+  show Fun         = "Fun"
+  show LookUp      = "LookUp"
+  show LookDown    = "LookDown"
+  show LookLeft    = "LookLeft"
+  show LookRight   = "LookRight"
+  show BlinkL      = "Blink_L"
+  show BlinkR      = "Blink_R"
+  show (Custom other) = unpack other
 -- 'IsString' にするのが正しいのかは少し悩んでいる...
 --
 -- I'm not sure whether it is correct decision to implement

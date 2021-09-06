@@ -86,6 +86,22 @@ spec = do
       prop "Ext/T -- Just get timestamp" $ \t ->
         fromOSCMessage (OSC.Message "/VMC/Ext/T" [OSC.Float t]) `shouldBe` Just (Time t)
 
+      prop "Ext/Root/Pos" $ \x y z qx qy qz qw ->
+                              fromOSCMessage (OSC.Message "/VMC/Ext/Root/Pos"
+                                             [ toDatumStr "root", OSC.Float x, OSC.Float y, OSC.Float z
+                                             , OSC.Float qx, OSC.Float qy, OSC.Float qz, OSC.Float qw
+                                             ])
+                              `shouldBe` Just (RootTransform (V3 x y z) (Quaternion qw $ V3 qx qy qz))
+
+      it "Ext/Root/Pos should fail when bone name is wrong" $
+        forAll ((arbitrary :: Gen T.Text) `suchThat` (/=) "root")
+        $ \name -> do
+            fromOSCMessage (OSC.Message "/VMC/Ext/Root/Pos"
+                             [ toDatumStr name, OSC.Float 0, OSC.Float 0, OSC.Float 0
+                             , OSC.Float 0, OSC.Float 0, OSC.Float 0
+                             ])
+              `shouldBe` Nothing
+        
       prop "Ext/Bone/Pos" $ \name x y z qx qy qz qw ->
                               fromOSCMessage (OSC.Message "/VMC/Ext/Bone/Pos"
                                               [toDatumStr name, OSC.Float x, OSC.Float y, OSC.Float z

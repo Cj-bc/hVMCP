@@ -1,3 +1,19 @@
 * Changelog for hVMCP
 
 ** Unreleased changes
+
+** [0.2.0.0] -- 2021-09-06
+*** Added
+    + Support VMCP Marionette Protocol v2.0
+      
+*** Changed
+    + 'fromOSCMessage' supports ~Ext/Root/Pos~ Message
+      
+*** Fixed
+    + ~Show~ instance of ~Data.VRM.BlendShapeExpression~ returns
+      ~Blink_L~/~Blink_R~ for ~BlinkL~/~BlinkR~ constructors
+
+** 0.1.0.0 -- 2021-09-03
+*** Added
+    + Support VMCP Marionette Protocol v1.0
+    + Provide pipes ~Producer~ for VMCP Marionette Protocol

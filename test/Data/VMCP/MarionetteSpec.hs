@@ -132,6 +132,10 @@ spec = do
       it "Ext/Blend/Apply" $
         fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Apply" []) `shouldBe` Just VRMBlendShapeProxyApply
       
+  describe "toOSCMessage" $ do
+    prop "Should be opposite to fromOSCMessage" $ \mario ->
+      (fromOSCMessage . toOSCMessage) mario `shouldBe` (Just mario)
+    
   describe "pop" $ do
     context "when State is empty list" $ do
       it "fails" $

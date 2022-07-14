@@ -12,6 +12,7 @@ https://protocol.vmc.info/marionette-spec
 -}
 {-# LANGUAGE TemplateHaskell #-}
 module Data.VMCP.Marionette where
+import Data.Bool (bool)
 import Data.Text.Encoding (decodeUtf8')
 import qualified Data.Text as T
 import Data.String (fromString)
@@ -19,9 +20,10 @@ import Data.VRM
 import Data.UnityEditor
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
-import Control.Lens ((^?), preview)
+import Linear.V4 (_x, _y, _z, _w)
+import Control.Lens ((^?), preview, review, (^.))
 import Control.Lens.TH (makeLenses, makePrisms)
-import Sound.OSC (Bundle(..), Message(..), ascii_to_string, Datum)
+import Sound.OSC (Bundle(..), Message(..), ascii_to_string, ascii, Datum, bundle)
 import Sound.OSC.Lens
 import Control.Monad.State (StateT(..), evalStateT, state, lift, get)
 import Control.Monad (when)
@@ -128,3 +130,31 @@ fromOSCMessage _ = Nothing
 -- I better to use them someway.
 fromOSCBundle :: Bundle -> Maybe [MarionetteMsg]
 fromOSCBundle (Bundle t msgs) = mapM fromOSCMessage msgs
+
+
+-- | Convert 'MarionetteMsg' into 'Message'
+toOSCMessage :: MarionetteMsg -> Message
+toOSCMessage (Available loaded) = Message "/VMC/Ext/OK" $ [review _Int32 (bool 0 1 loaded)]
+toOSCMessage (Time time)        = Message "/VMC/Ext/T"  $ [review _Float time]
+toOSCMessage (RootTransform pos q) =
+  let nameDatum = review _ASCII_String (ascii "Root")
+      valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
+                                     , q^._x, q^._y, q^._z, q^._w]
+  in Message "/VMC/Ext/Root/Pos" (nameDatum:valueDatums)
+toOSCMessage (BoneTransform name pos q) =
+  let nameDatum = (review _ASCII_String . ascii . show $ name)
+      valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
+                                      , q^._x, q^._y, q^._z, q^._w]
+  in Message "/VMC/Ext/Bone/Pos" (nameDatum:valueDatums)
+toOSCMessage (VRMBlendShapeProxyValue name val)
+  = Message "/VMC/Ext/Blend/Val" [(review _ASCII_String . ascii . show $ name)
+                                 , review _Float val ]
+toOSCMessage VRMBlendShapeProxyApply = Message "/VMC/Ext/Blend/Apply" []
+
+
+-- | Convert List of 'MarionetteMsg' into one 'Bundle'
+--
+-- TODO: 'OSC-timetag' isn't used properly.
+-- I must find good way to set it.
+toOSCBundle :: [MarionetteMsg] -> Bundle
+toOSCBundle = bundle 0 . fmap toOSCMessage

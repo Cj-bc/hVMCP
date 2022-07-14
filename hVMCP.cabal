@@ -56,6 +56,16 @@ executable recieve10
     , hVMCP
     , pipes
 
+executable sendTest
+  main-is: SendTest.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >= 4.7 && <5
+    , hVMCP
+    , pipes
+
 test-suite hVMCP-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs

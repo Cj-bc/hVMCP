@@ -38,7 +38,7 @@ recvMarionetteMsg addr p = do
 -- We have to find good way to calculate length of OSC bundle in bytes without
 -- actually convert them into ByteString every time.
 sendMarionetteMsg :: String -> Int -> Consumer MarionetteMsg IO ()
-sendMarionetteMsg addr p = mkPacket >-> sendOne >-> sendMarionetteMsg addr p
+sendMarionetteMsg addr p = mkPacket >-> sendOne >> sendMarionetteMsg addr p
   where
     sendOne = do
       packet <- await

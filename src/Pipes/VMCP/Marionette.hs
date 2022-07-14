@@ -1,10 +1,11 @@
+{-# LANGUAGE RankNTypes #-}
 module Pipes.VMCP.Marionette where
 
 import Control.Monad (forM_)
 import Pipes
 import Sound.OSC
 import Sound.OSC.Coding.Encode.Builder (encodeBundle)
-import Sound.OSC.Transport.FD.UDP (udpServer, openUDP)
+import Sound.OSC.Transport.FD.UDP (udpServer, openUDP, upd_send_packet)
 import qualified Sound.OSC.Transport.FD as FD
 import Data.VMCP.Marionette
 import qualified Data.ByteString.Lazy as L
@@ -37,17 +38,76 @@ recvMarionetteMsg addr p = do
 -- We have to find good way to calculate length of OSC bundle in bytes without
 -- actually convert them into ByteString every time.
 sendMarionetteMsg :: String -> Int -> Consumer MarionetteMsg IO ()
-sendMarionetteMsg addr p = do
-  messages <- accum_data []
-  lift $ FD.withTransport (openUDP addr p) (flip FD.sendBundle (toOSCBundle messages)) 
-  sendMarionetteMsg addr p
+sendMarionetteMsg addr p = mkPacket >-> sendOne >-> sendMarionetteMsg addr p
   where
-    -- | Accumulate 'MarionetteMsg's
-    accum_data :: [MarionetteMsg] -> Consumer MarionetteMsg IO [MarionetteMsg]
-    accum_data ds = do
-      message <- await
-      let new_ds = message:ds
-          bSize = calcBundleSize (Bundle 0 . fmap toOSCMessage $ new_ds)
-      if bSize >= 1300 -- 適当な値。1500を越える前に送る必要があるので,最終的には「最も大きいメッセージのバイト数」を引く
-        then return ds
-        else accum_data new_ds
+    sendOne = do
+      packet <- await
+      lift $ FD.withTransport (openUDP addr p) (flip upd_send_packet packet) 
+
+-- | Make OSC 'Packet' from 'MarionetteMsg'.
+--
+-- It'll make 'Bundle' packet if:
+--
+-- + Given 'MarionetteMsg' is 'VRMBlendShapeProxyValue'
+-- + Given 'MarionetteMsg' is 'BoneTransform'
+mkPacket :: Pipe MarionetteMsg Packet IO ()
+mkPacket = await >>= mkPacket'
+
+-- | Internal function for support recieving 'MarionetteMsg' as argunment
+mkPacket' :: MarionetteMsg -> Pipe MarionetteMsg Packet IO ()
+mkPacket' msg =
+  case msg of
+    (VRMBlendShapeProxyValue _ _) -> do
+      (nextMsg, b) <- mkBlendShapeProxyBundle [msg]
+      yield $ Packet_Bundle b
+      mkPacket' msg
+      
+    (BoneTransform _ _ _) -> do
+      (nextMsg, b) <- mkBoneTransformBundle [msg]
+      yield $ Packet_Bundle b
+      mkPacket' msg
+    _ -> yield $ Packet_Message (toOSCMessage msg)
+
+
+-- | Make 'Bundle' for 'BoneTransform'
+--
+-- It will return defined 'Bundle' and 'MarionetteMsg' that will be
+-- used in next step.
+--
+-- 'prevMsgs' are stored in reversed order.
+-- However, this will reverse it when finally create bundle.
+mkBoneTransformBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (MarionetteMsg, Bundle)
+mkBoneTransformBundle prevMsgs = do
+  msg <- await
+  case msg of
+    (BoneTransform _ _ _) ->
+      mkBoneTransformBundle (msg:prevMsgs)
+    _ ->
+      -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
+      return (msg, toOSCBundle $ reverse prevMsgs)
+
+
+-- | Make 'Bundle' for 'VRMBlendShapeProxyValue'
+--
+-- It will return defined 'Bundle' and 'MarionetteMsg' that will be
+-- used in next step if exists.
+--
+-- 'prevMsgs' are stored in reversed order.
+-- However, this will reverse it when finally create bundle.
+mkBlendShapeProxyBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (Maybe MarionetteMsg, Bundle)
+mkBlendShapeProxyBundle prevMsgs = do
+  msg <- await
+  case msg of
+    (VRMBlendShapeProxyValue _ _) ->
+      mkBlendShapeProxyBundle (msg:prevMsgs)
+    VRMBlendShapeProxyApply ->
+      -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
+      return (Nothing, toOSCBundle $ reverse (msg:prevMsgs))
+    -- Oops! Actually this should not happen.
+    -- 'VRMBlendShapeProxyValue's should be followed by 'VRMBlendShapeProxyApply',
+    -- but other type of message is coming.
+    -- For now, add 'VRMBlendShapeProxyApply' and return.
+    -- 
+    -- TODO: are there better way?
+    _ ->
+      return (Just msg, toOSCBundle $ reverse (VRMBlendShapeProxyApply:prevMsgs))

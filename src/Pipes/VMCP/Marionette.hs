@@ -7,7 +7,7 @@ import Sound.OSC.Coding.Encode.Builder (encodeBundle)
 import Sound.OSC.Transport.FD.UDP (udpServer, openUDP)
 import qualified Sound.OSC.Transport.FD as FD
 import Data.VMCP.Marionette
-import Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy as L
 
 -- | Each OSC Bundle should be smaller than this value in byte.
 --

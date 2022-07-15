@@ -62,6 +62,23 @@ instance Arbitrary BlendShapeExpression where
     customName <- (arbitrary :: Gen T.Text)  `suchThat` (\s -> (fromString.T.unpack) s `notElem` defaultExpressions)
     elements $ Custom customName:defaultExpressions
 
+instance Arbitrary MarionetteMsg where
+  arbitrary =
+    oneof [Available <$> arbitrary
+             , Time <$> arbitrary
+             , RootTransform <$> arbitrary <*> arbitrary
+             , BoneTransform <$> arbitrary <*> arbitrary <*> arbitrary
+             , VRMBlendShapeProxyValue <$> arbitrary <*> arbitrary
+             , pure VRMBlendShapeProxyApply
+             ]
+
+instance Arbitrary a => Arbitrary (V3 a) where
+  arbitrary = V3 <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Arbitrary a => Arbitrary (Quaternion a) where
+  arbitrary = Quaternion <$> arbitrary <*> arbitrary
+  
+
 toDatumStr :: Show s => s -> OSC.Datum
 toDatumStr = OSC.ASCII_String . fromString . show
 
@@ -115,6 +132,10 @@ spec = do
       it "Ext/Blend/Apply" $
         fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Apply" []) `shouldBe` Just VRMBlendShapeProxyApply
       
+  describe "toOSCMessage" $ do
+    prop "Should be opposite to fromOSCMessage" $ \mario ->
+      (fromOSCMessage . toOSCMessage) mario `shouldBe` (Just mario)
+    
   describe "pop" $ do
     context "when State is empty list" $ do
       it "fails" $

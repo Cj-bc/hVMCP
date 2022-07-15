@@ -58,13 +58,13 @@ mkPacket' :: MarionetteMsg -> Pipe MarionetteMsg Packet IO ()
 mkPacket' msg =
   case msg of
     (VRMBlendShapeProxyValue _ _) -> do
-      (nextMsg, b) <- mkBlendShapeProxyBundle [msg]
-      yield $ Packet_Bundle b
+      (nextMsg, bs) <- mkBlendShapeProxyBundle [msg]
+      each $ Packet_Bundle <$> bs
       mkPacket' msg
       
     (BoneTransform _ _ _) -> do
-      (nextMsg, b) <- mkBoneTransformBundle [msg]
-      yield $ Packet_Bundle b
+      (nextMsg, bs) <- mkBoneTransformBundle [msg]
+      each $ Packet_Bundle <$> bs
       mkPacket' msg
     _ -> yield $ Packet_Message (toOSCMessage msg)
 
@@ -74,9 +74,12 @@ mkPacket' msg =
 -- It will return defined 'Bundle' and 'MarionetteMsg' that will be
 -- used in next step.
 --
+-- When entire 'Bundle' gets bigger than 'oneBundleMaxByteSize',
+-- this will split into two automatically.
+--
 -- 'prevMsgs' are stored in reversed order.
 -- However, this will reverse it when finally create bundle.
-mkBoneTransformBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (MarionetteMsg, Bundle)
+mkBoneTransformBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (MarionetteMsg, [Bundle])
 mkBoneTransformBundle prevMsgs = do
   msg <- await
   case msg of
@@ -84,7 +87,8 @@ mkBoneTransformBundle prevMsgs = do
       mkBoneTransformBundle (msg:prevMsgs)
     _ ->
       -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
-      return (msg, toOSCBundle $ reverse prevMsgs)
+      return (msg, splitBundleIfNecessary (reverse prevMsgs))
+
 
 
 -- | Make 'Bundle' for 'VRMBlendShapeProxyValue'
@@ -92,9 +96,12 @@ mkBoneTransformBundle prevMsgs = do
 -- It will return defined 'Bundle' and 'MarionetteMsg' that will be
 -- used in next step if exists.
 --
+-- When entire 'Bundle' gets bigger than 'oneBundleMaxByteSize',
+-- this will split into two automatically.
+--
 -- 'prevMsgs' are stored in reversed order.
 -- However, this will reverse it when finally create bundle.
-mkBlendShapeProxyBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (Maybe MarionetteMsg, Bundle)
+mkBlendShapeProxyBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (Maybe MarionetteMsg, [Bundle])
 mkBlendShapeProxyBundle prevMsgs = do
   msg <- await
   case msg of
@@ -102,7 +109,7 @@ mkBlendShapeProxyBundle prevMsgs = do
       mkBlendShapeProxyBundle (msg:prevMsgs)
     VRMBlendShapeProxyApply ->
       -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
-      return (Nothing, toOSCBundle $ reverse (msg:prevMsgs))
+      return (Nothing, splitBundleIfNecessary (reverse $ msg:prevMsgs))
     -- Oops! Actually this should not happen.
     -- 'VRMBlendShapeProxyValue's should be followed by 'VRMBlendShapeProxyApply',
     -- but other type of message is coming.
@@ -110,4 +117,19 @@ mkBlendShapeProxyBundle prevMsgs = do
     -- 
     -- TODO: are there better way?
     _ ->
-      return (Just msg, toOSCBundle $ reverse (VRMBlendShapeProxyApply:prevMsgs))
+      return (Just msg, splitBundleIfNecessary (reverse $ VRMBlendShapeProxyApply:prevMsgs))
+
+
+-- | Create 'Bundle's from list of 'MarionetteMsg', taking into account of 'oneBundleMaxByteSize'
+--
+-- TODO: Improve bundle splitting efficiency.
+-- It's best if we can determine size before actually construct 'Bundle'
+-- Maybe we can pre-calculate them because all 'HumanBodyBones' are supplied
+-- in code.
+splitBundleIfNecessary :: [MarionetteMsg] -> [Bundle]
+splitBundleIfNecessary msgs =
+  let halfLen = length msgs `div` 2
+      b = toOSCBundle msgs
+  in if calcBundleSize b >= oneBundleMaxByteSize
+     then toOSCBundle <$> [take halfLen msgs, drop halfLen msgs]
+     else [b]

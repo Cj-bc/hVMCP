@@ -87,7 +87,7 @@ mkBoneTransformBundle prevMsgs = do
       mkBoneTransformBundle (msg:prevMsgs)
     _ ->
       -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
-      return (msg, splitBundleIfNecessary (reverse prevMsgs))
+      return (msg, mkBundles (reverse prevMsgs))
 
 
 
@@ -109,7 +109,7 @@ mkBlendShapeProxyBundle prevMsgs = do
       mkBlendShapeProxyBundle (msg:prevMsgs)
     VRMBlendShapeProxyApply ->
       -- As we put 'prevMsgs' in reversed order, it should ver 'reverse'd
-      return (Nothing, splitBundleIfNecessary (reverse $ msg:prevMsgs))
+      return (Nothing, mkBundles (reverse $ msg:prevMsgs))
     -- Oops! Actually this should not happen.
     -- 'VRMBlendShapeProxyValue's should be followed by 'VRMBlendShapeProxyApply',
     -- but other type of message is coming.
@@ -117,7 +117,7 @@ mkBlendShapeProxyBundle prevMsgs = do
     -- 
     -- TODO: are there better way?
     _ ->
-      return (Just msg, splitBundleIfNecessary (reverse $ VRMBlendShapeProxyApply:prevMsgs))
+      return (Just msg, mkBundles (reverse $ VRMBlendShapeProxyApply:prevMsgs))
 
 
 -- | Create 'Bundle's from list of 'MarionetteMsg', taking into account of 'oneBundleMaxByteSize'
@@ -126,8 +126,8 @@ mkBlendShapeProxyBundle prevMsgs = do
 -- It's best if we can determine size before actually construct 'Bundle'
 -- Maybe we can pre-calculate them because all 'HumanBodyBones' are supplied
 -- in code.
-splitBundleIfNecessary :: [MarionetteMsg] -> [Bundle]
-splitBundleIfNecessary msgs =
+mkBundles :: [MarionetteMsg] -> [Bundle]
+mkBundles msgs =
   let halfLen = length msgs `div` 2
       b = toOSCBundle msgs
   in if calcBundleSize b >= oneBundleMaxByteSize

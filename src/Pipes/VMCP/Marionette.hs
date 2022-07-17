@@ -7,7 +7,7 @@ import Sound.OSC
 import Sound.OSC.Coding.Encode.Builder (encodeBundle)
 import Sound.OSC.Transport.FD.UDP (udpServer, openUDP, upd_send_packet)
 import qualified Sound.OSC.Transport.FD as FD
-import Data.VMCP.Marionette hiding (toOSCMessage, fromOSCMessage)
+import Data.VMCP.Marionette
 import Data.VMCP.Message (VMCPMessage(..), calcBundleSize, oneBundleMaxByteSize, toOSCBundle, fromOSCBundle)
 import qualified Data.ByteString.Lazy as L
 

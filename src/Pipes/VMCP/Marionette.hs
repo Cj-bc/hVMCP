@@ -17,9 +17,32 @@ import qualified Data.ByteString.Lazy as L
 -- URL: https://protocol.vmc.info/specification
 oneBundleMaxByteSize = 1500
 
--- | Optimized function to calculate size of 'Bundle'
-calcBundleSize :: Bundle -> Int
-calcBundleSize = fromIntegral . L.length . encodeBundle -- TODO: No Optimization is done yet
+-- | Optimized version
+calcBundleSize :: [MarionetteMsg] -> Int
+calcBundleSize msgs = headerSize + bundleElementSize + (sum $ fmap bytesize msgs)
+  where
+    -- | Size of OSC-string "#bundle" + OSC-timetag
+    -- 
+    -- each of them have 8 bytes, so 16 bytes in total
+    -- Reference: https://cnmat.org/OpenSoundControl/OSC-spec.html
+    headerSize = 16
+    -- | Size of int32 value that express how much byte will next content have.
+    bundleElementSize = 4 * (length msgs)
+
+byteSizeWithPadding :: Show a => a -> Int
+byteSizeWithPadding = let align' n = (n + 3) .&. complement 3
+                      in align' . length . show
+
+bytesize :: MarionetteMsg -> Int
+bytesize msg = case msg of
+                 VRMBlendShapeProxyApply -> 28 -- ^ "/VMC/Ext/Blend/Apply0000,000"
+                 (VRMBlendShapeProxyValue name _) -> byteSizeWithPadding name + 32
+                 -- ^ "/VMC/Ext/Blend/Value0000,sf0<Name><Float 4bytes>"
+                 (BoneTransform bone _ _)         -> byteSizeWithPadding bone + 60
+                 -- ^ "/VMC/Ext/Bone/Pos000,sfffffff000<String >[<Float 4bytes>*7]"
+                 _ -> 0
+                 -- TODO: Should I implement this function for other value constructors?
+
 
 -- | Produce 'MarionetteMsg' continuously 
 --
@@ -129,7 +152,6 @@ mkBlendShapeProxyBundle prevMsgs = do
 mkBundles :: [MarionetteMsg] -> [Bundle]
 mkBundles msgs =
   let halfLen = length msgs `div` 2
-      b = toOSCBundle msgs
-  in if calcBundleSize b >= oneBundleMaxByteSize
+  in if calcBundleSize msgs >= oneBundleMaxByteSize
      then toOSCBundle <$> [take halfLen msgs, drop halfLen msgs]
-     else [b]
+     else [toOSCBundle msgs]

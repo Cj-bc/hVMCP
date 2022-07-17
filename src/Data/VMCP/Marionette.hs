@@ -17,6 +17,7 @@ import Data.Text.Encoding (decodeUtf8')
 import qualified Data.Text as T
 import Data.String (fromString)
 import Data.VRM
+import Data.VMCP.Message (VMCPMessage(..), byteSizeWithPadding)
 import Data.UnityEditor
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
@@ -76,6 +77,17 @@ makeLenses ''MarionetteMsg
 makePrisms ''MarionetteMsg
 
 
+instance VMCPMessage MarionetteMsg where
+  -- | Byte size of each 'MarionetteMsg'
+  byteSize msg = case msg of
+                   VRMBlendShapeProxyApply -> 28 -- ^ "/VMC/Ext/Blend/Apply0000,000"
+                   (VRMBlendShapeProxyValue name _) -> byteSizeWithPadding name + 32
+                   -- ^ "/VMC/Ext/Blend/Value0000,sf0<Name><Float 4bytes>"
+                   (BoneTransform bone _ _)         -> byteSizeWithPadding bone + 60
+                   -- ^ "/VMC/Ext/Bone/Pos000,sfffffff000<String >[<Float 4bytes>*7]"
+                   _ -> 0
+                   -- TODO: Should I implement this function for other value constructors?
+
 -- | 'pop' one item from 'State' state
 -- 
 -- Helper function for state monad
@@ -124,13 +136,6 @@ fromOSCMessage (Message addr datums)
 fromOSCMessage _ = Nothing
 
 
--- | Convert 'Bundle' into list of 'MarionetteMsg'
---
--- TODO: Currently it ommit 'OSC-timetag'.
--- I better to use them someway.
-fromOSCBundle :: Bundle -> Maybe [MarionetteMsg]
-fromOSCBundle (Bundle t msgs) = mapM fromOSCMessage msgs
-
 
 -- | Convert 'MarionetteMsg' into 'Message'
 toOSCMessage :: MarionetteMsg -> Message
@@ -152,9 +157,4 @@ toOSCMessage (VRMBlendShapeProxyValue name val)
 toOSCMessage VRMBlendShapeProxyApply = Message "/VMC/Ext/Blend/Apply" []
 
 
--- | Convert List of 'MarionetteMsg' into one 'Bundle'
---
--- TODO: 'OSC-timetag' isn't used properly.
--- I must find good way to set it.
-toOSCBundle :: [MarionetteMsg] -> Bundle
-toOSCBundle = bundle 0 . fmap toOSCMessage
+

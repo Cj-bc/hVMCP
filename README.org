@@ -17,6 +17,10 @@
 
    より具体的な使い方の説明はチョットマッテネ
   
+** 使用例
++ [[https://github.com/Cj-bc/faclig][Cj-bc/faclig]] :: AAのモデルを操作するためのやつ
++ ~examples/~ 以下 :: 色々例があります
+  
 ** FAQ
    
 *** なんでGPL3なの？

@@ -7,6 +7,9 @@
   #+end_quote
 
   ばもきゃプロトコルのHaskell版実装です。
+** バージョン対応情報
++ VMCP v2.0まで
++ Marionette APIのみ
 
 ** 基本的な使い方
    基本的には [[https://hackage.haskell.org/package/pipes-4.3.16][pipes]]と組み合わせて使うことになると思います。

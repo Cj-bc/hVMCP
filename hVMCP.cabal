@@ -57,6 +57,16 @@ executable recieve10
     , hVMCP
     , pipes
 
+executable recieveForever
+  main-is: RecieveForever.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >= 4.7 && <5
+    , hVMCP
+    , pipes
+
 executable sendTest
   main-is: SendTest.hs
   hs-source-dirs:

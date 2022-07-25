@@ -10,6 +10,7 @@ Portability :  non-portable
 Send Pre-defined 'MarionetteMsg' to 127.0.0.1:39540.
 39540 is default port number for VMCP.
 -}
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 import Pipes.VMCP.Marionette
 import Pipes
@@ -18,9 +19,24 @@ import Data.VRM (BlendShapeExpression(..))
 import Control.Monad (join)
 
 main = runEffect $ each [Available True
+                        , VRMBlendShapeProxyValue Neutral 0.0
+                        , VRMBlendShapeProxyValue A      0.0
+                        , VRMBlendShapeProxyValue I      0.0
+                        , VRMBlendShapeProxyValue U      0.0
+                        , VRMBlendShapeProxyValue E      0.0
+                        , VRMBlendShapeProxyValue O      0.0
+                        , VRMBlendShapeProxyValue Blink  0.0
+                        , VRMBlendShapeProxyValue Joy 0.0
+                        , VRMBlendShapeProxyValue Angry  0.0
+                        , VRMBlendShapeProxyValue Sorrow 0.0
+                        , VRMBlendShapeProxyValue Fun 0.0
+                        , VRMBlendShapeProxyValue LookUp 0.0
+                        , VRMBlendShapeProxyValue LookDown 0.0
+                        , VRMBlendShapeProxyValue LookLeft 0.0
+                        , VRMBlendShapeProxyValue LookRight 0.0
                         , VRMBlendShapeProxyValue BlinkL 1.0
                         , VRMBlendShapeProxyValue BlinkR 0.0
-                        , VRMBlendShapeProxyValue A 0.6
+                        , VRMBlendShapeProxyValue (Custom "HELLO") 0.6
                         , VRMBlendShapeProxyApply
                         ]
       >-> sendMarionetteMsg "127.0.0.1" 39540

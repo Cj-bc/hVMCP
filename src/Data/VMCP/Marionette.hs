@@ -17,6 +17,7 @@ import Data.Text.Encoding (decodeUtf8')
 import qualified Data.Text as T
 import Data.String (fromString)
 import Data.VRM
+import Data.VMCP.Message (VMCPMessage(..), byteSizeWithPadding)
 import Data.UnityEditor
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
@@ -76,6 +77,19 @@ makeLenses ''MarionetteMsg
 makePrisms ''MarionetteMsg
 
 
+instance VMCPMessage MarionetteMsg where
+  -- | Byte size of each 'MarionetteMsg'
+  byteSize msg = case msg of
+                   VRMBlendShapeProxyApply -> 28 -- ^ "/VMC/Ext/Blend/Apply0000,000"
+                   (VRMBlendShapeProxyValue name _) -> byteSizeWithPadding name + 32
+                   -- ^ "/VMC/Ext/Blend/Value0000,sf0<Name><Float 4bytes>"
+                   (BoneTransform bone _ _)         -> byteSizeWithPadding bone + 60
+                   -- ^ "/VMC/Ext/Bone/Pos000,sfffffff000<String >[<Float 4bytes>*7]"
+                   _ -> 0
+                   -- TODO: Should I implement this function for other value constructors?
+  fromOSCMessage = fromOSCMessage'
+  toOSCMessage = toOSCMessage'
+
 -- | 'pop' one item from 'State' state
 -- 
 -- Helper function for state monad
@@ -95,8 +109,8 @@ pop' l = do
 --
 -- All invalid 'Message's will be ignored, as it's written
 -- in VMCP specification.
-fromOSCMessage :: Message -> Maybe MarionetteMsg
-fromOSCMessage (Message addr datums)
+fromOSCMessage' :: Message -> Maybe MarionetteMsg
+fromOSCMessage' (Message addr datums)
   | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32
   | addr == "/VMC/Ext/T"             = Time <$> head datums^?_Float
   | addr == "/VMC/Ext/Root/Pos"      = flip evalStateT datums $ do
@@ -121,40 +135,28 @@ fromOSCMessage (Message addr datums)
           return $ VRMBlendShapeProxyValue (fromString . T.unpack $ n') val
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
-fromOSCMessage _ = Nothing
+fromOSCMessage' _ = Nothing
 
-
--- | Convert 'Bundle' into list of 'MarionetteMsg'
---
--- TODO: Currently it ommit 'OSC-timetag'.
--- I better to use them someway.
-fromOSCBundle :: Bundle -> Maybe [MarionetteMsg]
-fromOSCBundle (Bundle t msgs) = mapM fromOSCMessage msgs
 
 
 -- | Convert 'MarionetteMsg' into 'Message'
-toOSCMessage :: MarionetteMsg -> Message
-toOSCMessage (Available loaded) = Message "/VMC/Ext/OK" $ [review _Int32 (bool 0 1 loaded)]
-toOSCMessage (Time time)        = Message "/VMC/Ext/T"  $ [review _Float time]
-toOSCMessage (RootTransform pos q) =
+toOSCMessage' :: MarionetteMsg -> Message
+toOSCMessage' (Available loaded) = Message "/VMC/Ext/OK" $ [review _Int32 (bool 0 1 loaded)]
+toOSCMessage' (Time time)        = Message "/VMC/Ext/T"  $ [review _Float time]
+toOSCMessage' (RootTransform pos q) =
   let nameDatum = review _ASCII_String (ascii "Root")
       valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
                                      , q^._x, q^._y, q^._z, q^._w]
   in Message "/VMC/Ext/Root/Pos" (nameDatum:valueDatums)
-toOSCMessage (BoneTransform name pos q) =
+toOSCMessage' (BoneTransform name pos q) =
   let nameDatum = (review _ASCII_String . ascii . show $ name)
       valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
                                       , q^._x, q^._y, q^._z, q^._w]
   in Message "/VMC/Ext/Bone/Pos" (nameDatum:valueDatums)
-toOSCMessage (VRMBlendShapeProxyValue name val)
+toOSCMessage' (VRMBlendShapeProxyValue name val)
   = Message "/VMC/Ext/Blend/Val" [(review _ASCII_String . ascii . show $ name)
                                  , review _Float val ]
-toOSCMessage VRMBlendShapeProxyApply = Message "/VMC/Ext/Blend/Apply" []
+toOSCMessage' VRMBlendShapeProxyApply = Message "/VMC/Ext/Blend/Apply" []
 
 
--- | Convert List of 'MarionetteMsg' into one 'Bundle'
---
--- TODO: 'OSC-timetag' isn't used properly.
--- I must find good way to set it.
-toOSCBundle :: [MarionetteMsg] -> Bundle
-toOSCBundle = bundle 0 . fmap toOSCMessage
+

@@ -8,18 +8,9 @@ import Sound.OSC.Coding.Encode.Builder (encodeBundle)
 import Sound.OSC.Transport.FD.UDP (udpServer, openUDP, upd_send_packet)
 import qualified Sound.OSC.Transport.FD as FD
 import Data.VMCP.Marionette
+import Data.VMCP.Message (VMCPMessage(..), calcBundleSize, oneBundleMaxByteSize, toOSCBundle, fromOSCBundle)
 import qualified Data.ByteString.Lazy as L
 
--- | Each OSC Bundle should be smaller than this value in byte.
---
---
--- > パケットは適切な範囲(1500byte以内)でbundle化されており、受信者は適切に扱う必要があります。
--- URL: https://protocol.vmc.info/specification
-oneBundleMaxByteSize = 1500
-
--- | Optimized function to calculate size of 'Bundle'
-calcBundleSize :: Bundle -> Int
-calcBundleSize = fromIntegral . L.length . encodeBundle -- TODO: No Optimization is done yet
 
 -- | Produce 'MarionetteMsg' continuously 
 --
@@ -129,7 +120,6 @@ mkBlendShapeProxyBundle prevMsgs = do
 mkBundles :: [MarionetteMsg] -> [Bundle]
 mkBundles msgs =
   let halfLen = length msgs `div` 2
-      b = toOSCBundle msgs
-  in if calcBundleSize b >= oneBundleMaxByteSize
+  in if calcBundleSize msgs >= oneBundleMaxByteSize
      then toOSCBundle <$> [take halfLen msgs, drop halfLen msgs]
-     else [b]
+     else [toOSCBundle msgs]

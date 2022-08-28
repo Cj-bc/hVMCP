@@ -1,6 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 module Pipes.VMCP.Marionette where
 
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad (forM_)
 import Pipes
 import Sound.OSC
@@ -15,9 +16,9 @@ import qualified Data.ByteString.Lazy as L
 -- | Produce 'MarionetteMsg' continuously 
 --
 -- TODO: Don't reopen udpServer each time. I think it's better implementation.
-recvMarionetteMsg :: String -> Int -> Producer MarionetteMsg IO ()
+recvMarionetteMsg :: MonadIO m => String -> Int -> Producer MarionetteMsg m ()
 recvMarionetteMsg addr p = do
-  bundles <- lift $ FD.withTransport (udpServer addr p) (fmap fromOSCBundle . FD.recvBundle)
+  bundles <- liftIO $ FD.withTransport (udpServer addr p) (fmap fromOSCBundle . FD.recvBundle)
   forM_ bundles each
   recvMarionetteMsg addr p
 
@@ -28,12 +29,12 @@ recvMarionetteMsg addr p = do
 -- TODO: This implementation is tedious and could be performance issue.
 -- We have to find good way to calculate length of OSC bundle in bytes without
 -- actually convert them into ByteString every time.
-sendMarionetteMsg :: String -> Int -> Consumer MarionetteMsg IO ()
+sendMarionetteMsg :: MonadIO m => String -> Int -> Consumer MarionetteMsg m ()
 sendMarionetteMsg addr p = mkPacket >-> sendOne >> sendMarionetteMsg addr p
   where
     sendOne = do
       packet <- await
-      lift $ FD.withTransport (openUDP addr p) (flip upd_send_packet packet) 
+      liftIO $ FD.withTransport (openUDP addr p) (flip upd_send_packet packet)
 
 -- | Make OSC 'Packet' from 'MarionetteMsg'.
 --
@@ -41,11 +42,11 @@ sendMarionetteMsg addr p = mkPacket >-> sendOne >> sendMarionetteMsg addr p
 --
 -- + Given 'MarionetteMsg' is 'VRMBlendShapeProxyValue'
 -- + Given 'MarionetteMsg' is 'BoneTransform'
-mkPacket :: Pipe MarionetteMsg Packet IO ()
+mkPacket :: MonadIO m => Pipe MarionetteMsg Packet m ()
 mkPacket = await >>= mkPacket'
 
 -- | Internal function for support recieving 'MarionetteMsg' as argunment
-mkPacket' :: MarionetteMsg -> Pipe MarionetteMsg Packet IO ()
+mkPacket' :: MonadIO m => MarionetteMsg -> Pipe MarionetteMsg Packet m ()
 mkPacket' msg =
   case msg of
     (VRMBlendShapeProxyValue _ _) -> do
@@ -70,7 +71,7 @@ mkPacket' msg =
 --
 -- 'prevMsgs' are stored in reversed order.
 -- However, this will reverse it when finally create bundle.
-mkBoneTransformBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (MarionetteMsg, [Bundle])
+mkBoneTransformBundle :: MonadIO m => [MarionetteMsg] -> Consumer' MarionetteMsg m (MarionetteMsg, [Bundle])
 mkBoneTransformBundle prevMsgs = do
   msg <- await
   case msg of
@@ -92,7 +93,7 @@ mkBoneTransformBundle prevMsgs = do
 --
 -- 'prevMsgs' are stored in reversed order.
 -- However, this will reverse it when finally create bundle.
-mkBlendShapeProxyBundle :: [MarionetteMsg] -> Consumer' MarionetteMsg IO (Maybe MarionetteMsg, [Bundle])
+mkBlendShapeProxyBundle :: MonadIO m => [MarionetteMsg] -> Consumer' MarionetteMsg m (Maybe MarionetteMsg, [Bundle])
 mkBlendShapeProxyBundle prevMsgs = do
   msg <- await
   case msg of

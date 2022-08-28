@@ -11,5 +11,5 @@ import Pipes
 import qualified Pipes.Prelude as P
 import Pipes.VMCP.Marionette
 
-main = runEffect $ recvMarionetteMsg "192.168.10.3" 39540
+main = runEffect $ recvMarionetteMsg "127.0.0.1" 39540
        >-> P.print

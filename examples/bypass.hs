@@ -17,6 +17,5 @@ import Pipes.VMCP.Marionette
 main = let in_port = 39540
            in_addr = "192.168.10.3"
            out_port = 39540
-           out_addr = "192.168.10.14"
+           out_addr = "192.168.10.6"
        in runEffect $ recvMarionetteMsg in_addr in_port >-> sendMarionetteMsg out_addr out_port
-           

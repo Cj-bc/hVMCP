@@ -18,7 +18,7 @@ import Data.VMCP.Marionette (MarionetteMsg(..))
 import Data.VRM (BlendShapeExpression(..))
 import Control.Monad (join)
 
-main = runEffect $ each [Available True
+main = runEffect $ each (mconcat $ replicate 20 [Available True
                         , VRMBlendShapeProxyValue Neutral 0.0
                         , VRMBlendShapeProxyValue A      0.0
                         , VRMBlendShapeProxyValue I      0.0
@@ -38,6 +38,6 @@ main = runEffect $ each [Available True
                         , VRMBlendShapeProxyValue BlinkR 0.0
                         , VRMBlendShapeProxyValue (Custom "HELLO") 0.6
                         , VRMBlendShapeProxyApply
-                        ]
+                        ])
       >-> sendMarionetteMsg "127.0.0.1" 39540
   

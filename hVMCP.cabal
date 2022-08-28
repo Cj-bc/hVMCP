@@ -25,7 +25,7 @@ source-repository head
 
 flag examples
      Description: build example programs
-     Default: false
+     Default: False
 
 library
   exposed-modules:
@@ -53,7 +53,7 @@ library
 
 executable receive10
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: Receive10.hs
   hs-source-dirs:
       examples
@@ -65,7 +65,7 @@ executable receive10
 
 executable receiveForever
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: ReceiveForever.hs
   hs-source-dirs:
       examples
@@ -77,7 +77,7 @@ executable receiveForever
 
 executable sendTest
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: SendTest.hs
   hs-source-dirs:
       examples
@@ -89,7 +89,7 @@ executable sendTest
 
 executable watchBundles
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: WatchBundles.hs
   hs-source-dirs:
       examples
@@ -101,7 +101,7 @@ executable watchBundles
 
 executable bypass
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: bypass.hs
   hs-source-dirs:
       examples
@@ -113,7 +113,7 @@ executable bypass
 
 executable sendForever
   if !flag(examples)
-     Buildable: false
+     Buildable: False
   main-is: SendForever.hs
   hs-source-dirs:
       examples

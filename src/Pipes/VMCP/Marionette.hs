@@ -39,11 +39,9 @@ recvMarionetteMsgWithUdp udp = do
 -- We have to find good way to calculate length of OSC bundle in bytes without
 -- actually convert them into ByteString every time.
 sendMarionetteMsg :: MonadIO m => String -> Int -> Consumer MarionetteMsg m ()
-sendMarionetteMsg addr p = mkPacket >-> sendOne >> sendMarionetteMsg addr p
+sendMarionetteMsg addr p = mkPacket >-> sendOne
   where
-    sendOne = do
-      packet <- await
-      liftIO $ FD.withTransport (openUDP addr p) (flip upd_send_packet packet)
+    sendOne = for cat $ liftIO . FD.withTransport (openUDP addr p) . flip upd_send_packet
 
 -- | Make OSC 'Packet' from 'MarionetteMsg'.
 --

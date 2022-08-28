@@ -14,13 +14,22 @@ import qualified Data.ByteString.Lazy as L
 
 
 -- | Produce 'MarionetteMsg' continuously 
---
--- TODO: Don't reopen udpServer each time. I think it's better implementation.
 recvMarionetteMsg :: MonadIO m => String -> Int -> Producer MarionetteMsg m ()
 recvMarionetteMsg addr p = do
-  bundles <- liftIO $ FD.withTransport (udpServer addr p) (fmap fromOSCBundle . FD.recvBundle)
+  udp <- (liftIO $ udpServer addr p)
+  recvMarionetteMsgWithUdp udp
+  liftIO $ FD.close udp
+
+-- | Produce 'MarionetteMsg' by using given 'UDP'.
+--
+-- It is prefered to use this with bracket functions than 'recvMarionetteMsg',
+--
+--    withTransport (udp_server YOURPORT) $ \socket -> recvMarionetteMsgWithUdp socket
+recvMarionetteMsgWithUdp :: MonadIO m => UDP -> Producer MarionetteMsg m ()
+recvMarionetteMsgWithUdp udp = do
+  bundles <- liftIO . fmap fromOSCBundle $ FD.recvBundle udp
   forM_ bundles each
-  recvMarionetteMsg addr p
+  recvMarionetteMsgWithUdp udp
 
 -- | Send 'MarionetteMsg' to given addr/port.
 --

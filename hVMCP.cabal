@@ -77,6 +77,16 @@ executable sendTest
     , hVMCP
     , pipes
 
+executable watchBundles
+  main-is: WatchBundles.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >= 4.7 && <5
+    , hVMCP
+    , pipes
+
 executable bypass
   main-is: bypass.hs
   hs-source-dirs:
@@ -86,6 +96,18 @@ executable bypass
        base >= 4.7 && <5
      , hVMCP
      , pipes
+
+executable sendForever
+  main-is: SendForever.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+       base >= 4.7 && <5
+     , hVMCP
+     , pipes
+     , linear
+     , hosc
 
 test-suite hVMCP-test
   type: exitcode-stdio-1.0

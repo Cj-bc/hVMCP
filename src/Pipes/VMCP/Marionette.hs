@@ -2,7 +2,7 @@
 module Pipes.VMCP.Marionette where
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad (forM_)
+import Control.Monad (forM_, forever)
 import Pipes
 import Sound.OSC
 import Sound.OSC.Coding.Encode.Builder (encodeBundle)
@@ -52,7 +52,7 @@ sendMarionetteMsg addr p = mkPacket >-> sendOne >> sendMarionetteMsg addr p
 -- + Given 'MarionetteMsg' is 'VRMBlendShapeProxyValue'
 -- + Given 'MarionetteMsg' is 'BoneTransform'
 mkPacket :: MonadIO m => Pipe MarionetteMsg Packet m ()
-mkPacket = await >>= mkPacket'
+mkPacket = for cat mkPacket'
 
 -- | Internal function for support recieving 'MarionetteMsg' as argunment
 mkPacket' :: MonadIO m => MarionetteMsg -> Pipe MarionetteMsg Packet m ()

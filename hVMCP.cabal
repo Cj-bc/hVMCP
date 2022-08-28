@@ -74,6 +74,7 @@ executable receiveForever
       base >= 4.7 && <5
     , hVMCP
     , pipes
+    , hosc
 
 executable sendTest
   if !flag(examples)

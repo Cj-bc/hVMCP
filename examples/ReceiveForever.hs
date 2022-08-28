@@ -10,6 +10,8 @@ module Main where
 import Pipes
 import qualified Pipes.Prelude as P
 import Pipes.VMCP.Marionette
+import Sound.OSC.Transport.FD (withTransport)
+import Sound.OSC (udp_server)
 
-main = runEffect $ recvMarionetteMsg "127.0.0.1" 39540
-       >-> P.print
+main = withTransport (udp_server 39540) $ \udp ->
+  runEffect $ recvMarionetteMsgWithUdp udp >-> P.print

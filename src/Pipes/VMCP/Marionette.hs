@@ -59,12 +59,12 @@ mkPacket' msg =
     (VRMBlendShapeProxyValue _ _) -> do
       (nextMsg, bs) <- mkBlendShapeProxyBundle [msg]
       each $ Packet_Bundle <$> bs
-      mkPacket' msg
+      maybe (pure ()) mkPacket' nextMsg
       
     (BoneTransform _ _ _) -> do
       (nextMsg, bs) <- mkBoneTransformBundle [msg]
       each $ Packet_Bundle <$> bs
-      mkPacket' msg
+      mkPacket' nextMsg
     _ -> yield $ Packet_Message (toOSCMessage msg)
 
 

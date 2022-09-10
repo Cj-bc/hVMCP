@@ -49,6 +49,8 @@ library
     , pipes
     , hashable
     , bytestring
+    , QuickCheck
+    , generic-arbitrary
   default-language: Haskell2010
 
 executable receive10

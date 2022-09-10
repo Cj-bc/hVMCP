@@ -13,6 +13,7 @@ module Data.VRM where
 import Data.Text (Text, pack, unpack)
 import Data.String (IsString(..))
 import Data.Hashable (Hashable(..))
+import Test.QuickCheck (Arbitrary(arbitrary), elements)
 
 -- | Predefined Blendshape names.
 --
@@ -90,3 +91,15 @@ instance Hashable BlendShapeExpression where
   hashWithSalt s BlinkL         = s `hashWithSalt` (15 :: Int)
   hashWithSalt s BlinkR         = s `hashWithSalt` (16 :: Int)
   hashWithSalt s (Custom other) = s `hashWithSalt` (17 :: Int) `hashWithSalt` other
+
+
+instance Arbitrary BlendShapeExpression where
+  arbitrary = elements [Neutral
+                       , A , I , U , E , O
+                       , Blink
+                       , Joy , Angry , Sorrow , Fun
+                       , LookUp , LookDown
+                       , LookLeft , LookRight
+                       , BlinkL , BlinkR
+                       , Custom (pack "") -- TODO: Use Text arbitrary value
+                       ]

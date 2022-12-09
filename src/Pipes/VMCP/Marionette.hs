@@ -6,12 +6,18 @@ import Control.Monad (forM_, forever)
 import Pipes
 import Sound.OSC
 import Sound.OSC.Coding.Encode.Builder (encodeBundle)
-import Sound.OSC.Transport.FD.UDP (udpServer, openUDP, upd_send_packet)
+import Sound.OSC.Coding.Byte (bundleHeader_strict)
+import Sound.OSC.Transport.FD.UDP (udpServer, udp_server, openUDP, upd_send_packet)
 import qualified Sound.OSC.Transport.FD as FD
 import Data.VMCP.Marionette
 import Data.VMCP.Message (VMCPMessage(..), calcBundleSize, oneBundleMaxByteSize, toOSCBundle, fromOSCBundle)
 import qualified Data.ByteString.Lazy as L
 
+recvMarionetteMsgAsBundle :: MonadIO m => String -> Int -> Producer [MarionetteMsg] m ()
+recvMarionetteMsgAsBundle addr p = do
+  bundles <- liftIO $ FD.withTransport (udp_server p) (fmap fromOSCBundle . FD.recvBundle)
+  maybe (pure ()) yield bundles
+  recvMarionetteMsgAsBundle addr p
 
 -- | Produce 'MarionetteMsg' continuously 
 recvMarionetteMsg :: MonadIO m => String -> Int -> Producer MarionetteMsg m ()

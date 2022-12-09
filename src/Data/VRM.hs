@@ -9,11 +9,13 @@ Portability :  portable
 
 Subset of data types for VRM
 -}
+{-# LANGUAGE DeriveGeneric #-}
 module Data.VRM where
 import Data.Text (Text, pack, unpack)
 import Data.String (IsString(..))
 import Data.Hashable (Hashable(..))
 import Test.QuickCheck (Arbitrary(arbitrary), elements)
+import GHC.Generics (Generic)
 
 -- | Predefined Blendshape names.
 --
@@ -26,7 +28,7 @@ data BlendShapeExpression = Neutral
                           | LookLeft | LookRight
                           | BlinkL | BlinkR
                           | Custom Text
-                          deriving (Read, Eq)
+                          deriving (Read, Eq, Generic)
 
 instance Show BlendShapeExpression where
   show Neutral     = "Neutral"     

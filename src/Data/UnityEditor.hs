@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Data.UnityEditor where
 import GHC.Generics (Generic)
+import Data.Hashable (Hashable)
 import Test.QuickCheck (Arbitrary(arbitrary), elements)
 import Test.QuickCheck.Arbitrary.Generic (genericArbitrary)
 
@@ -53,6 +54,8 @@ data HumanBodyBones = Hips
                     | RightLittleDistal
                     | LastBone
                     deriving (Read, Show, Eq, Generic)
+
+instance Hashable HumanBodyBones
 
 instance Arbitrary HumanBodyBones where
   arbitrary = genericArbitrary

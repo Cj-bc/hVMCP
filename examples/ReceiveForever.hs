@@ -10,8 +10,8 @@ module Main where
 import Pipes
 import qualified Pipes.Prelude as P
 import Pipes.VMCP.Marionette
-import Sound.OSC.Transport.FD (withTransport)
-import Sound.OSC (udp_server)
+import Sound.Osc.Transport.Fd (withTransport)
+import Sound.Osc (udp_server)
 
 main = withTransport (udp_server 39540) $ \udp ->
   runEffect $ recvMarionetteMsgWithUdp udp >-> P.print

@@ -12,7 +12,7 @@ import Data.Maybe (isNothing, isJust)
 import Data.String (fromString)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import qualified Sound.OSC as OSC
+import qualified Sound.Osc as OSC
 import Control.Monad (guard, unless)
 import Control.Monad.State (execStateT, runStateT, evalStateT)
 import Linear.Quaternion (Quaternion(..))

@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# OPTIONS_GHC -fconstraint-solver-iterations=10 #-}
+
 module Data.UnityEditor where
 import GHC.Generics (Generic)
 import Data.Hashable (Hashable)

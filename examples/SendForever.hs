@@ -17,7 +17,7 @@ import Data.List (iterate')
 import Data.VMCP.Marionette (MarionetteMsg(RootTransform))
 import Pipes.VMCP.Marionette
 import Pipes
-import Sound.OSC (sleepThread)
+import Sound.Osc (sleepThread)
 import Linear.V3 (V3(..))
 import Linear.Quaternion (axisAngle)
 

@@ -24,8 +24,8 @@ import Linear.V3 (V3(..))
 import Linear.V4 (_x, _y, _z, _w)
 import Control.Lens ((^?), preview, review, (^.))
 import Control.Lens.TH (makeLenses, makePrisms)
-import Sound.OSC (Bundle(..), Message(..), ascii_to_string, ascii, Datum, bundle)
-import Sound.OSC.Lens
+import Sound.Osc (Bundle(..), Message(..), ascii_to_string, ascii, Datum, bundle)
+import Sound.Osc.Lens
 import Control.Monad.State (StateT(..), evalStateT, state, lift, get)
 import Control.Monad (when)
 
@@ -114,20 +114,20 @@ fromOSCMessage' (Message addr datums)
   | addr == "/VMC/Ext/OK"            = Available . (== 1) <$> head datums^?_Int32
   | addr == "/VMC/Ext/T"             = Time <$> head datums^?_Float
   | addr == "/VMC/Ext/Root/Pos"      = flip evalStateT datums $ do
-      name <- ascii_to_string <$> pop' _ASCII_String
+      name <- ascii_to_string <$> pop' _AsciiString
       -- when (name /= "root") $ fail "Wrong root bone name"
       pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q <- Quaternion <$> pop' _Float <*> pure q'
       return $ RootTransform pos q
   | addr == "/VMC/Ext/Bone/Pos"      = flip evalStateT datums $ do -- Monad of 'StateT [Datum] Maybe
-      name <- read . ascii_to_string <$> pop' _ASCII_String
+      name <- read . ascii_to_string <$> pop' _AsciiString
       pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q <- Quaternion <$> pop' _Float <*> pure q'
       return $ BoneTransform name pos q
   | addr == "/VMC/Ext/Blend/Val"     = flip evalStateT datums $ do
-      name <- decodeUtf8' <$> pop' _ASCII_String
+      name <- decodeUtf8' <$> pop' _AsciiString
       case name of
         (Left e) -> fail "Ext/Blend/Val: invalid UTF-8 character"
         (Right n') -> do
@@ -144,17 +144,17 @@ toOSCMessage' :: MarionetteMsg -> Message
 toOSCMessage' (Available loaded) = Message "/VMC/Ext/OK" $ [review _Int32 (bool 0 1 loaded)]
 toOSCMessage' (Time time)        = Message "/VMC/Ext/T"  $ [review _Float time]
 toOSCMessage' (RootTransform pos q) =
-  let nameDatum = review _ASCII_String (ascii "Root")
+  let nameDatum = review _AsciiString (ascii "Root")
       valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
                                      , q^._x, q^._y, q^._z, q^._w]
   in Message "/VMC/Ext/Root/Pos" (nameDatum:valueDatums)
 toOSCMessage' (BoneTransform name pos q) =
-  let nameDatum = (review _ASCII_String . ascii . show $ name)
+  let nameDatum = (review _AsciiString . ascii . show $ name)
       valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
                                       , q^._x, q^._y, q^._z, q^._w]
   in Message "/VMC/Ext/Bone/Pos" (nameDatum:valueDatums)
 toOSCMessage' (VRMBlendShapeProxyValue name val)
-  = Message "/VMC/Ext/Blend/Val" [(review _ASCII_String . ascii . show $ name)
+  = Message "/VMC/Ext/Blend/Val" [(review _AsciiString . ascii . show $ name)
                                  , review _Float val ]
 toOSCMessage' VRMBlendShapeProxyApply = Message "/VMC/Ext/Blend/Apply" []
 

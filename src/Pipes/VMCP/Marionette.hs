@@ -4,11 +4,11 @@ module Pipes.VMCP.Marionette where
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad (forM_, forever)
 import Pipes
-import Sound.OSC
-import Sound.OSC.Coding.Encode.Builder (encodeBundle)
-import Sound.OSC.Coding.Byte (bundleHeader_strict)
-import Sound.OSC.Transport.FD.UDP (udpServer, udp_server, openUDP, upd_send_packet)
-import qualified Sound.OSC.Transport.FD as FD
+import Sound.Osc
+import Sound.Osc.Coding.Encode.Builder (encodeBundle)
+import Sound.Osc.Coding.Byte (bundleHeader_strict)
+import Sound.Osc.Transport.Fd.Udp (udpServer, udp_server, openUdp, udp_send_packet)
+import qualified Sound.Osc.Transport.Fd as FD
 import Data.VMCP.Marionette
 import Data.VMCP.Message (VMCPMessage(..), calcBundleSize, oneBundleMaxByteSize, toOSCBundle, fromOSCBundle)
 import qualified Data.ByteString.Lazy as L
@@ -31,7 +31,7 @@ recvMarionetteMsg addr p = do
 -- It is prefered to use this with bracket functions than 'recvMarionetteMsg',
 --
 --    withTransport (udp_server YOURPORT) $ \socket -> recvMarionetteMsgWithUdp socket
-recvMarionetteMsgWithUdp :: MonadIO m => UDP -> Producer MarionetteMsg m ()
+recvMarionetteMsgWithUdp :: MonadIO m => Udp -> Producer MarionetteMsg m ()
 recvMarionetteMsgWithUdp udp = do
   bundles <- liftIO . fmap fromOSCBundle $ FD.recvBundle udp
   forM_ bundles each
@@ -47,7 +47,7 @@ recvMarionetteMsgWithUdp udp = do
 sendMarionetteMsg :: MonadIO m => String -> Int -> Consumer MarionetteMsg m ()
 sendMarionetteMsg addr p = mkPacket >-> sendOne
   where
-    sendOne = for cat $ liftIO . FD.withTransport (openUDP addr p) . flip upd_send_packet
+    sendOne = for cat $ liftIO . FD.withTransport (openUdp addr p) . flip udp_send_packet
 
 -- | Make OSC 'Packet' from 'MarionetteMsg'.
 --

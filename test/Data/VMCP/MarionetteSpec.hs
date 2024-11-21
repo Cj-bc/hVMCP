@@ -18,50 +18,6 @@ import Control.Monad.State (execStateT, runStateT, evalStateT)
 import Linear.Quaternion (Quaternion(..))
 import Linear.V3 (V3(..))
 
-
-instance Arbitrary HumanBodyBones where
-  arbitrary = elements [Hips
-                       , LeftUpperLeg , RightUpperLeg, LeftLowerLeg , RightLowerLeg
-                       , LeftFoot , RightFoot
-                       , Spine, Chest, UpperChest, Neck, Head
-                       , LeftShoulder , RightShoulder
-                       , LeftUpperArm , RightUpperArm, LeftLowerArm , RightLowerArm
-                       , LeftHand , RightHand, LeftToes , RightToes
-                       , LeftEye , RightEye, Jaw
-                       , LeftThumbProximal, LeftThumbIntermediate
-                       , LeftThumbDistal, LeftIndexProximal
-                       , LeftIndexIntermediate, LeftIndexDistal
-                       , LeftMiddleProximal, LeftMiddleIntermediate
-                       , LeftMiddleDistal, LeftRingProximal
-                       , LeftRingIntermediate, LeftRingDistal
-                       , LeftLittleProximal, LeftLittleIntermediate
-                       , LeftLittleDistal, RightThumbProximal
-                       , RightThumbIntermediate
-                       , RightThumbDistal
-                       , RightIndexProximal
-                       , RightIndexIntermediate
-                       , RightIndexDistal
-                       , RightMiddleProximal
-                       , RightMiddleIntermediate
-                       , RightMiddleDistal
-                       , RightRingProximal
-                       , RightRingIntermediate
-                       , RightRingDistal
-                       , RightLittleProximal
-                       , RightLittleIntermediate
-                       , RightLittleDistal
-                       , LastBone
-                       ]
-
-instance Arbitrary BlendShapeExpression where
-  arbitrary = do
-    let defaultExpressions = [ Neutral, A , I , U , E , O
-             , Blink, Joy , Angry , Sorrow , Fun
-             , LookUp , LookDown, LookLeft , LookRight
-             , BlinkL , BlinkR]
-    customName <- (arbitrary :: Gen T.Text)  `suchThat` (\s -> (fromString.T.unpack) s `notElem` defaultExpressions)
-    elements $ Custom customName:defaultExpressions
-
 instance Arbitrary MarionetteMsg where
   arbitrary =
     oneof [Available <$> arbitrary

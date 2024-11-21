@@ -48,19 +48,19 @@ spec = do
   describe "fromOSCMessage" $ do
     context "when provided with unknown Message" $ do
         it "returns Nothing" .
-          isNothing $ fromOSCMessage (OSC.Message "invalidAddress" [])
+          isNothing $ fromOSCMessage' (OSC.Message "invalidAddress" [])
     context "test for each endpoints" $ do
       it "Ext/Ok  -- Before model is loaded" $
-        fromOSCMessage (OSC.Message "/VMC/Ext/OK" [OSC.Int32 0]) `shouldBe` Just (Available False)
+        fromOSCMessage' (OSC.Message "/VMC/Ext/OK" [OSC.Int32 0]) `shouldBe` Just (Available False)
 
       it "Ext/Ok  -- After  model is loaded" $
-        fromOSCMessage (OSC.Message "/VMC/Ext/OK" [OSC.Int32 1]) `shouldBe` Just (Available True)
+        fromOSCMessage' (OSC.Message "/VMC/Ext/OK" [OSC.Int32 1]) `shouldBe` Just (Available True)
 
       prop "Ext/T -- Just get timestamp" $ \t ->
-        fromOSCMessage (OSC.Message "/VMC/Ext/T" [OSC.Float t]) `shouldBe` Just (Time t)
+        fromOSCMessage' (OSC.Message "/VMC/Ext/T" [OSC.Float t]) `shouldBe` Just (Time t)
 
       prop "Ext/Root/Pos" $ \x y z qx qy qz qw ->
-                              fromOSCMessage (OSC.Message "/VMC/Ext/Root/Pos"
+                              fromOSCMessage' (OSC.Message "/VMC/Ext/Root/Pos"
                                              [ toDatumStr "root", OSC.Float x, OSC.Float y, OSC.Float z
                                              , OSC.Float qx, OSC.Float qy, OSC.Float qz, OSC.Float qw
                                              ])
@@ -69,28 +69,28 @@ spec = do
       it "Ext/Root/Pos should fail when bone name is wrong" $
         forAll ((arbitrary :: Gen T.Text) `suchThat` (/=) "root")
         $ \name -> do
-            fromOSCMessage (OSC.Message "/VMC/Ext/Root/Pos"
+            fromOSCMessage' (OSC.Message "/VMC/Ext/Root/Pos"
                              [ toDatumStr name, OSC.Float 0, OSC.Float 0, OSC.Float 0
                              , OSC.Float 0, OSC.Float 0, OSC.Float 0
                              ])
               `shouldBe` Nothing
         
       prop "Ext/Bone/Pos" $ \name x y z qx qy qz qw ->
-                              fromOSCMessage (OSC.Message "/VMC/Ext/Bone/Pos"
+                              fromOSCMessage' (OSC.Message "/VMC/Ext/Bone/Pos"
                                               [toDatumStr name, OSC.Float x, OSC.Float y, OSC.Float z
                                               , OSC.Float qx, OSC.Float qy, OSC.Float qz, OSC.Float qw
                                               ])
                               `shouldBe` Just (BoneTransform name (V3 x y z) (Quaternion qw $ V3 qx qy qz))
 
       prop "Ext/Blend/Val" $ \name val -> 
-                               fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Val" [toDatumStr' name, OSC.Float val])
+                               fromOSCMessage' (OSC.Message "/VMC/Ext/Blend/Val" [toDatumStr' name, OSC.Float val])
                                `shouldBe` Just (VRMBlendShapeProxyValue name val)
       it "Ext/Blend/Apply" $
-        fromOSCMessage (OSC.Message "/VMC/Ext/Blend/Apply" []) `shouldBe` Just VRMBlendShapeProxyApply
+        fromOSCMessage' (OSC.Message "/VMC/Ext/Blend/Apply" []) `shouldBe` Just VRMBlendShapeProxyApply
       
   describe "toOSCMessage" $ do
     prop "Should be opposite to fromOSCMessage" $ \mario ->
-      (fromOSCMessage . toOSCMessage) mario `shouldBe` (Just mario)
+      (fromOSCMessage' . toOSCMessage') mario `shouldBe` (Just mario)
     
   describe "pop" $ do
     context "when State is empty list" $ do

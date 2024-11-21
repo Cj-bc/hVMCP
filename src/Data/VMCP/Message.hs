@@ -11,7 +11,7 @@ Portability :  portable
 -}
 module Data.VMCP.Message where
 import Data.Bits ((.&.), complement)
-import Sound.OSC (Message, Bundle(..), bundle)
+import Sound.Osc (Message, Bundle(..), bundle)
 
 -- | VMCP's message types.
 --

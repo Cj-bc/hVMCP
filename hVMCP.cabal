@@ -33,7 +33,7 @@ library
     , Data.VMCP.Message
     , Data.VRM
     , Data.UnityEditor
-    , Sound.OSC.Lens
+    , Sound.Osc.Lens
     , Pipes.VMCP.Marionette
   other-modules:
       Paths_hVMCP
@@ -44,7 +44,7 @@ library
     , text
     , linear
     , lens
-    , hosc
+    , hosc >= 0.20
     , mtl
     , pipes
     , hashable
@@ -76,7 +76,7 @@ executable receiveForever
       base >= 4.7 && <5
     , hVMCP
     , pipes
-    , hosc
+    , hosc >= 0.20
 
 executable sendTest
   if !flag(examples)
@@ -126,7 +126,7 @@ executable sendForever
      , hVMCP
      , pipes
      , linear
-     , hosc
+     , hosc >= 0.20
 
 test-suite hVMCP-test
   type: exitcode-stdio-1.0
@@ -144,7 +144,7 @@ test-suite hVMCP-test
     , hspec
     , QuickCheck
     , quickcheck-instances
-    , hosc
+    , hosc >= 0.20
     , mtl
     , linear
     , text

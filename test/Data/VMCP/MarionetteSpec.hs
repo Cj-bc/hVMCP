@@ -12,7 +12,7 @@ import Data.Maybe (isNothing, isJust)
 import Data.String (fromString)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import qualified Sound.OSC as OSC
+import qualified Sound.Osc as OSC
 import Control.Monad (guard, unless)
 import Control.Monad.State (execStateT, runStateT, evalStateT)
 import Linear.Quaternion (Quaternion(..))
@@ -80,12 +80,12 @@ instance Arbitrary a => Arbitrary (Quaternion a) where
   
 
 toDatumStr :: Show s => s -> OSC.Datum
-toDatumStr = OSC.ASCII_String . fromString . show
+toDatumStr = OSC.AsciiString . fromString . show
 
 -- | Special case for 'BlendShapeExpression', as one of its constructor
 -- should be treated differently.
 toDatumStr' :: BlendShapeExpression -> OSC.Datum
-toDatumStr' (Custom s) = OSC.ASCII_String . encodeUtf8 $ s
+toDatumStr' (Custom s) = OSC.AsciiString . encodeUtf8 $ s
 toDatumStr' other = toDatumStr other
 
 spec = do

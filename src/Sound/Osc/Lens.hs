@@ -11,6 +11,5 @@ Portability :  non-portable
 module Sound.Osc.Lens where
 import Control.Lens
 import Sound.Osc
-import Data.ByteString
 
 makePrisms ''Datum

@@ -5,7 +5,7 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           hVMCP
-version:        0.2.0.0
+version:        0.3.0.0
 description:    Please see the README on GitHub at <https://github.com/Cj-bc/hVMCP#readme>
 homepage:       https://github.com/Cj-bc/hVMCP#readme
 bug-reports:    https://github.com/Cj-bc/hVMCP/issues

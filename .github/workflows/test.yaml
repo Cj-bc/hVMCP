@@ -1,0 +1,44 @@
+name: library test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/*'
+      - 'app/*'
+      - 'Setup.hs'
+      - 'examples/*'
+      - '*.cabal'
+      - 'src/*'
+      - 'stack.yaml'
+      - 'test/*'
+
+permissions:
+  contents: read
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        snapshot:
+          - 'lts-18.5'
+          - 'lts-22.42'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache stack global package db
+        id: stack-global
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.stack
+          key: ${{ matrix.snapshot }}--stack-global
+      - name: Cache stack work
+        id: stack-local
+        uses: actions/cache@v4
+        with:
+          path: |
+            .stack-work
+          key: ${{ matrix.snapshot }}--stack-local
+      - name: Build and test
+        run: |
+          stack test --stack-yaml stack-${{ matrix.snapshot }}.yaml

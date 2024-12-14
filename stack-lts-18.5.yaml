@@ -1,0 +1,5 @@
+resolver: lts-18.5
+packages:
+- .
+extra-deps:
+  - hosc-0.20@sha256:5aa9985a65a7b31fd3707dc04bf6221273a83d2f47009f816622114ff6c59bac,2077

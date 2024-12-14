@@ -1,6 +1,12 @@
 * Changelog for hVMCP
 
 ** Unreleased changes
+** [0.3.0.0] -- 2024-12-14
+*** Changed
+    + Bump up stack resolver from LTS-18.5 (ghc 8.10.4) to LTS-22.42 (ghc 9.6.6)
+*** Fixed
+    + Remove duplicated "Arbitrary" instance from test code.
+    + Make test codes built successfully.
 
 ** [0.2.0.0] -- 2021-09-06
 *** Added

@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 2.2
 
 -- This file has been generated from package.yaml by hpack version 0.34.4.
 --
@@ -12,7 +12,7 @@ bug-reports:    https://github.com/Cj-bc/hVMCP/issues
 author:         Cj.bc-sd a.k.a Cj-bc
 maintainer:     cj.bc-sd@outlook.jp
 copyright:      2021, 2024 Cj.bc-sd a.k.a Cj-bc
-license:        GPL-3.0
+license:        GPL-3.0-or-later
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:

@@ -135,7 +135,6 @@ fromOSCMessage' (Message addr datums)
           return $ VRMBlendShapeProxyValue (fromString . T.unpack $ n') val
   | addr == "/VMC/Ext/Blend/Apply"   = Just VRMBlendShapeProxyApply
   | otherwise                                = Nothing
-fromOSCMessage' _ = Nothing
 
 
 

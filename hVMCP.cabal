@@ -11,7 +11,7 @@ homepage:       https://github.com/Cj-bc/hVMCP#readme
 bug-reports:    https://github.com/Cj-bc/hVMCP/issues
 author:         Cj.bc-sd a.k.a Cj-bc
 maintainer:     cj.bc-sd@outlook.jp
-copyright:      2021 Cj.bc-sd a.k.a Cj-bc
+copyright:      2021, 2024 Cj.bc-sd a.k.a Cj-bc
 license:        GPL-3.0
 license-file:   LICENSE
 build-type:     Simple

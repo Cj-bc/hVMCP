@@ -30,6 +30,7 @@ flag examples
 library
   exposed-modules:
       Data.VMCP.Marionette
+    , Data.VMCP.Performer
     , Data.VMCP.Message
     , Data.VRM
     , Data.UnityEditor
@@ -131,10 +132,10 @@ executable sendForever
 test-suite hVMCP-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
-  test-module:
-      MarionetteSpec
   other-modules:
-      Paths_hVMCP
+      Data.VMCP.MarionetteSpec
+    , Data.VMCP.PerformerSpec
+    , Paths_hVMCP
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

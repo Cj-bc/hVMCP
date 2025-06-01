@@ -22,7 +22,7 @@ instance Arbitrary MarionetteMsg where
   arbitrary =
     oneof [Available <$> arbitrary
              , Time <$> arbitrary
-             , RootTransform <$> arbitrary <*> arbitrary
+             , RootTransform <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
              , BoneTransform <$> arbitrary <*> arbitrary <*> arbitrary
              , VRMBlendShapeProxyValue <$> arbitrary <*> arbitrary
              , pure VRMBlendShapeProxyApply
@@ -59,12 +59,15 @@ spec = do
       prop "Ext/T -- Just get timestamp" $ \t ->
         fromOSCMessage' (OSC.Message "/VMC/Ext/T" [OSC.Float t]) `shouldBe` Just (Time t)
 
-      prop "Ext/Root/Pos" $ \x y z qx qy qz qw ->
+      prop "Ext/Root/Pos" $ \x y z qx qy qz qw sx sy sz ox oy oz ->
                               fromOSCMessage' (OSC.Message "/VMC/Ext/Root/Pos"
-                                             [ toDatumStr "root", OSC.Float x, OSC.Float y, OSC.Float z
+                                             [ toDatumStr "root"
+                                             , OSC.Float x, OSC.Float y, OSC.Float z
                                              , OSC.Float qx, OSC.Float qy, OSC.Float qz, OSC.Float qw
+                                             , OSC.Float sx, OSC.Float sy, OSC.Float sz
+                                             , OSC.Float ox, OSC.Float oy, OSC.Float oz
                                              ])
-                              `shouldBe` Just (RootTransform (V3 x y z) (Quaternion qw $ V3 qx qy qz))
+                              `shouldBe` Just (RootTransform (V3 x y z) (Quaternion qw $ V3 qx qy qz) (V3 sx sy sz) (V3 ox oy oz))
 
       it "Ext/Root/Pos should fail when bone name is wrong" $
         forAll ((arbitrary :: Gen T.Text) `suchThat` (/=) "root")

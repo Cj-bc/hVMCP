@@ -51,6 +51,8 @@ data MarionetteMsg =
   -- 受信側ではLoal姿勢として扱うことを推奨する
   | RootTransform { _position :: V3 Float
                   , _quaternion :: Quaternion Float
+                  , _scale :: V3 Float
+                  , _offset :: V3 Float
                   }
   -- | モデルのrootとなるオブジェクトのLocal姿勢
   --
@@ -73,6 +75,7 @@ data MarionetteMsg =
   | VRMBlendShapeProxyApply
   deriving (Show, Eq)
 
+makeLenses ''RootTransform
 makeLenses ''MarionetteMsg
 makePrisms ''MarionetteMsg
 
@@ -85,6 +88,8 @@ instance VMCPMessage MarionetteMsg where
                    -- ^ "/VMC/Ext/Blend/Value0000,sf0<Name><Float 4bytes>"
                    (BoneTransform bone _ _)         -> byteSizeWithPadding bone + 60
                    -- ^ "/VMC/Ext/Bone/Pos000,sfffffff000<String >[<Float 4bytes>*7]"
+                   (RootTransform {}) -> byteSizeWithPadding "/VMC/Ext/Root/Pos" + byteSizeWithPadding "root" + 13 * 4
+                   -- ^ "/VMC/Ext/Root/Pos000,sfffffffffffff00<String>root[<Float 4bytes>*13]"
                    _ -> 0
                    -- TODO: Should I implement this function for other value constructors?
   fromOSCMessage = fromOSCMessage'
@@ -118,8 +123,11 @@ fromOSCMessage' (Message addr datums)
       -- when (name /= "root") $ fail "Wrong root bone name"
       pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
       q'  <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
-      q <- Quaternion <$> pop' _Float <*> pure q'
-      return $ RootTransform pos q
+      qval <- pop' _Float
+      let q = Quaternion qval q'
+      scale <- V3 <$> pop' _Float <*> pop' _Float <*> pop' _Float
+      offset <- V3 <$> pop' _Float <*> pop' _Float <*> pop' _Float
+      return $ RootTransform pos q scale offset
   | addr == "/VMC/Ext/Bone/Pos"      = flip evalStateT datums $ do -- Monad of 'StateT [Datum] Maybe
       name <- read . ascii_to_string <$> pop' _AsciiString
       pos <- V3 <$> pop' _Float  <*> pop' _Float  <*> pop' _Float
@@ -143,10 +151,13 @@ fromOSCMessage' _ = Nothing
 toOSCMessage' :: MarionetteMsg -> Message
 toOSCMessage' (Available loaded) = Message "/VMC/Ext/OK" $ [review _Int32 (bool 0 1 loaded)]
 toOSCMessage' (Time time)        = Message "/VMC/Ext/T"  $ [review _Float time]
-toOSCMessage' (RootTransform pos q) =
-  let nameDatum = review _AsciiString (ascii "Root")
-      valueDatums = review _Float <$> [pos^._x, pos^._y, pos^._z
-                                     , q^._x, q^._y, q^._z, q^._w]
+toOSCMessage' (RootTransform pos q scale offset) =
+  let nameDatum = review _AsciiString (ascii "root")
+      valueDatums = review _Float <$> [ pos^._x, pos^._y, pos^._z
+                                     , q^._x, q^._y, q^._z, q^._w
+                                     , scale^._x, scale^._y, scale^._z
+                                     , offset^._x, offset^._y, offset^._z
+                                     ]
   in Message "/VMC/Ext/Root/Pos" (nameDatum:valueDatums)
 toOSCMessage' (BoneTransform name pos q) =
   let nameDatum = (review _AsciiString . ascii . show $ name)
